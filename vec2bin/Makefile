@@ -1,21 +1,22 @@
 NAME = vec2bin
-CC = clang
-CFLAGS = -Wall -Wextra -g3
+CC = epiclang
+CFLAGS = -Wall -Wextra -Iinclude -g3
 LDFLAGS = -lm
 
+SRCS_DIR = src
 SRCS = \
-	main.c \
-	parse_vec.c \
-	write_cvec.c \
-	buffers.c
+	$(SRCS_DIR)/main.c \
+	$(SRCS_DIR)/parse_vec.c \
+	$(SRCS_DIR)/write_cvec.c \
+	$(SRCS_DIR)/buffers.c
 
 BUILD_DIR = build
 OBJS_DIR = $(BUILD_DIR)/obj
 DEPS_DIR = $(BUILD_DIR)/dep
 BIN_DIR = $(BUILD_DIR)/bin
 TARGET = $(BIN_DIR)/$(NAME)
-OBJS = $(SRCS:%.c=$(OBJS_DIR)/%.o)
-DEPS = $(SRCS:%.c=$(DEPS_DIR)/%.d)
+OBJS = $(SRCS:$(SRCS_DIR)/%.c=$(OBJS_DIR)/%.o)
+DEPS = $(SRCS:$(SRCS_DIR)/%.c=$(DEPS_DIR)/%.d)
 
 all: $(NAME)
 
@@ -26,7 +27,7 @@ $(TARGET): $(OBJS)
 	@mkdir -p $(BIN_DIR)
 	$(CC) -o $(TARGET) $(OBJS) $(LDFLAGS)
 
-$(OBJS_DIR)/%.o: %.c vec2bin.h
+$(OBJS_DIR)/%.o: $(SRCS_DIR)/%.c include/*.h
 	@mkdir -p $(dir $@)
 	@mkdir -p $(dir $(DEPS_DIR)/$*.d)
 	$(CC) $(CFLAGS) -MMD -MP -MF $(DEPS_DIR)/$*.d -MT $@ -c $< -o $@
