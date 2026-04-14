@@ -5,9 +5,9 @@
 ** main entry file
 */
 
-#include "cmantix.h"
+#include <stdlib.h>
 
 int main(void)
 {
-    return SUCCESS_EXIT;
+    return EXIT_SUCCESS;
 }
