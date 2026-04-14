@@ -1,0 +1,93 @@
+name: Epitech CI
+
+on:
+  push:
+    branches:
+      - main
+    branches-ignore:
+      - 'no-ga/**'
+  pull_request:
+    branches-ignore:
+      - 'no-ga/**'
+
+env:
+  EXECUTABLES: "cmantix,vec2bin/vec2bin"
+
+jobs:
+  check_compilation_and_coding_style:
+    name: Check compilation and coding style
+    runs-on: ubuntu-latest
+    container:
+      image: epitechcontent/epitest-docker
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run banana-check-repo
+        run: banana-check-repo
+
+      - name: Compile project
+        run: make CC=epiclang
+        timeout-minutes: 2
+
+      - name: Compile vec2bin
+        run: make -C vec2bin CC=epiclang
+        timeout-minutes: 2
+
+      - name: Display coding style errors as annotations
+        run: |
+          if [ -f coding-style-reports.log ]; then
+            while IFS= read -r line; do
+              file=$(echo "$line" | cut -d':' -f1 | sed 's|^./||')
+              lineno=$(echo "$line" | cut -d':' -f2)
+              severity=$(echo "$line" | cut -d':' -f3 | xargs)
+              code=$(echo "$line" | cut -d':' -f4 | xargs)
+              message=$(echo "$line" | cut -d':' -f5- | xargs)
+              echo "::error file=${file},line=${lineno},title=${severity} coding style error::${code} - ${message}"
+            done < coding-style-reports.log
+          fi
+
+      - name: Fail if coding style errors exist
+        run: |
+          if [ -f coding-style-reports.log ] && [ -s coding-style-reports.log ]; then
+            exit 1
+          fi
+
+      - name: Clean build artifacts
+        run: |
+          make clean
+          make -C vec2bin clean
+
+      - name: Check executables exist and are executable
+        run: |
+          IFS=',' read -ra EXEC_LIST <<< "$EXECUTABLES"
+          failed=0
+          for exec in "${EXEC_LIST[@]}"; do
+            exec=$(echo "$exec" | xargs)
+            if [ ! -f "$exec" ]; then
+              echo "::error title=Missing executable::Executable '$exec' not found"
+              failed=1
+            elif [ ! -x "$exec" ]; then
+              echo "::error file=${exec},title=Non-executable file::File '$exec' exists but is not executable"
+              failed=1
+            fi
+          done
+          exit $failed
+
+  run_tests:
+    name: Run tests
+    runs-on: ubuntu-latest
+    needs: check_compilation_and_coding_style
+    container:
+      image: epitechcontent/epitest-docker
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run tests
+        run: make tests_run
+        timeout-minutes: 2

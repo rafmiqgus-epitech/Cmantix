@@ -1,0 +1,9 @@
+build/
+*.o
+*.a
+cmantix
+vec2bin/vec2bin
+vec2bin/build/
+tests/cmantix_tests
+data/
+*.cvec
