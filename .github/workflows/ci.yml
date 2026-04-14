@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - main
-    branches-ignore:
-      - 'no-ga/**'
   pull_request:
     branches-ignore:
       - 'no-ga/**'
