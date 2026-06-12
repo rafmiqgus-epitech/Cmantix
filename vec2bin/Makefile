@@ -1,14 +1,15 @@
 NAME = vec2bin
 CC = epiclang
-CFLAGS = -Wall -Wextra -Iinclude -g3
+CFLAGS = -Wall -Wextra -Iinclude -I../include -g3
 LDFLAGS = -lm
 
 SRCS_DIR = src
 SRCS = \
 	$(SRCS_DIR)/main.c \
+	$(SRCS_DIR)/args.c \
 	$(SRCS_DIR)/parse_vec.c \
-	$(SRCS_DIR)/write_cvec.c \
-	$(SRCS_DIR)/buffers.c
+	$(SRCS_DIR)/cvec_content.c \
+	$(SRCS_DIR)/write_cvec.c
 
 BUILD_DIR = build
 OBJS_DIR = $(BUILD_DIR)/obj
@@ -39,6 +40,10 @@ fclean: clean
 	rm -f $(NAME)
 
 re: fclean all
+
+compdb:
+	@mkdir -p $(BUILD_DIR)
+	bear --output $(BUILD_DIR)/compile_commands.json -- $(MAKE) -B $(OBJS)
 
 .PHONY: all clean fclean re
 
